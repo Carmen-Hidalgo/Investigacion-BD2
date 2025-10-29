@@ -1,0 +1,17 @@
+{
+  "name": "meteo-prototype",
+  "version": "1.0.0",
+  "description": "Prototipo meteorológico con Node.js, Kafka, Storm, MongoDB Atlas y Telegram",
+  "main": "api/sensors.js",
+  "type": "module",
+  "scripts": {
+    "start": "node api/sensors.js",
+    "test-kafka": "node api/test-kafka.js"
+  },
+  "author": "Proyecto Meteorológico",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "kafka-node": "^5.0.0"
+  }
+}

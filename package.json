@@ -1,7 +1,30 @@
 {
   "dependencies": {
     "dotenv": "^17.2.3",
+    "express": "^4.19.2",
     "kafka-node": "^5.0.0"
   },
-  "type": "module"
+  "type": "module",
+  "name": "investigacion-bd2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Carmen-Hidalgo/Investigacion-BD2.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Carmen-Hidalgo/Investigacion-BD2/issues"
+  },
+  "homepage": "https://github.com/Carmen-Hidalgo/Investigacion-BD2#readme",
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
 }

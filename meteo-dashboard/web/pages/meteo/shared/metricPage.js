@@ -46,7 +46,7 @@ const metricPage = ({
 <body>
   <div class="topbar">
     <div class="logo">⛅</div>
-    <div style="font-weight:600">${label} • Meteo</div>
+    <div style="font-weight:600">${label} • Meteorology</div>
     <div style="margin-left:auto" class="muted" id="clock"></div>
     <a class="btn" href="/">Home</a>
   </div>

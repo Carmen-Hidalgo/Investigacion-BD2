@@ -9,14 +9,14 @@ let ready = false;
 
 producer.on("ready", () => {
   ready = true;
-  console.log("✅ Productor conectado a Kafka:", process.env.KAFKA_BROKER);
+  console.log("✅ Productor Connected to Kafka:", process.env.KAFKA_BROKER);
 });
 
 producer.on("error", (err) => console.error("❌ Kafka error:", err));
 
 export default function sendSensorData(sensor, value) {
   if (!ready) {
-    console.warn("⚠️ Productor aún no está listo. Mensaje omitido.");
+    console.warn("⚠️ Productor not ready yet, Message ignored.");
     return;
   }
 
@@ -32,7 +32,7 @@ export default function sendSensorData(sensor, value) {
   ];
 
   producer.send(payloads, (err, data) => {
-    if (err) console.error("Error enviando mensaje a Kafka:", err);
-    else console.log(`📤 Enviado a Kafka: ${sensor}=${value}`);
+    if (err) console.error("Error sending to Kafka:", err);
+    else console.log(`📤 Sended to Kafka: ${sensor} = ${value}`);
   });
 }

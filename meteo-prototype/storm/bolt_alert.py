@@ -9,7 +9,7 @@ class AlertBolt(Bolt):
         self.mongo = pymongo.MongoClient(os.getenv("MONGO_URI")).meteo.readings
         self.thresholds = {
             "temperatura": [35, 40],
-            "humedad": [20, 10],
+            "humedad": [70, 85],
             "viento": [60, 80],
             "precipitacion": [50, 80],
             "agua": [1.5, 2],

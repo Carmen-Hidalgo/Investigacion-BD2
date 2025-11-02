@@ -103,17 +103,19 @@ const metricPage = ({
       </div>
     </div>
 
-    <p class="muted" style="text-align:center;margin-top:8px">Demo only — values simulated every 3 seconds.</p>
+    <p class="muted" style="text-align:center;margin-top:8px"> This is a Demo only</p>
   </div>
 
 <script>
 (function(){
+  // Info escrita para el lector
   const cfg = {
     key: "${key}", label: "${label}", unit: "${unit}",
     range: [${range[0]}, ${range[1]}], decimals: ${decimals},
     thresholds: { warn: ${warn}, critical: ${critical} }
   };
 
+  // Nombres de los sensores
   const SENSOR_IDS = {
     temperature:   ["temperatura","temperature","temp"],
     humidity:      ["humedad","humidity"],
@@ -124,10 +126,14 @@ const metricPage = ({
   };
   const accepts = new Set((SENSOR_IDS[cfg.key] || [cfg.key]).map(s => s.toLowerCase()));
 
+  // Que no se pase del max y el min
   const clamp = (v,min,max) => Math.max(min, Math.min(max, v));
+  // Convierte número en porcentaje para el grafo circular
   const pct   = (v,[min,max]) => ((v-min)/(max-min))*100;
 
+  // Para el gráfico
   const ctx = document.getElementById("c");
+  // El eje x
   const labels = []; const data = [];
   const chart = new Chart(ctx, {
     type:"line",
@@ -136,9 +142,8 @@ const metricPage = ({
       scales:{ y:{ min: cfg.range[0], max: cfg.range[1] }, x:{ ticks:{display:false}, grid:{display:false} } }
     }
   });
-
+  // Muestra los valores en el gráfico
   function pushValue(val) {
-    // clamp to visible range for safety (don’t distort stored data)
     const v = clamp(Number(val), cfg.range[0], cfg.range[1]);
     const t = new Date().toLocaleTimeString();
 
@@ -146,7 +151,6 @@ const metricPage = ({
     if (labels.length > 30) { labels.shift(); data.shift(); }
     chart.update();
 
-    // KPI + gauge + badge
     document.getElementById("latest").textContent = v.toFixed(cfg.decimals) + " " + cfg.unit;
     const p = Math.round(pct(v, cfg.range));
     const g = document.getElementById("g");
@@ -154,13 +158,14 @@ const metricPage = ({
     g.style.setProperty("--ring", "#5aa9ff");
     document.getElementById("pct").textContent = p + "%";
 
+    // Mostrar si es normal, malo o crítico
     const b = document.getElementById("badge");
     const st = v >= cfg.thresholds.critical ? "crit" : v >= cfg.thresholds.warn ? "warn" : "ok";
     b.className = "badge " + st;
     b.textContent = st==="ok" ? "Normal" : (st==="warn" ? "Warning" : "Critical");
   }
 
-  // --- Live stream via SSE ---
+  // Mostrar valores en tiempo real
   let gotAny = false;
   try {
     const es = new EventSource("/stream");
@@ -171,10 +176,10 @@ const metricPage = ({
       gotAny = true;
       pushValue(r.value);
     });
-    es.onerror = () => { /* ignore; browser will auto-retry due to 'retry' header */ };
+    es.onerror = () => {};
   } catch(_) {}
 
-  // Clock
+  // Reloj
   setInterval(() => {
     const el = document.getElementById("clock");
     if (el) el.textContent = new Date().toLocaleString();

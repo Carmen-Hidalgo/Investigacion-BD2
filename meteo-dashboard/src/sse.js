@@ -1,5 +1,6 @@
 const clients = new Set();
 
+// Permite que se puedan actualizar valores en tiempo real
 export function setupSSE(app) {
   app.get("/stream", (req, res) => {
     res.set({

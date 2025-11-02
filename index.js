@@ -1,5 +1,10 @@
 // server.js
 import express from "express";
+
+// Para enviar info al dashboard
+import { setupSSE } from "./meteo-dashboard/src/sse.js";
+import "./meteo-prototype/api/kafka-consumer.js";
+
 // Páginas de cada dashboard
 import home from "./meteo-dashboard/web/pages/home/home.js";
 import temperature from "./meteo-dashboard/web/pages/meteo/temperature/temperature.js";
@@ -12,6 +17,7 @@ import seismic from "./meteo-dashboard/web/pages/meteo/seismic/seismic.js";
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+setupSSE(app);
 app.use(express.static("pages"));
 
 // Pantalla de home

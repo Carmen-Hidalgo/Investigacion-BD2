@@ -113,13 +113,19 @@ const metricPage = ({
     range: [${range[0]}, ${range[1]}], decimals: ${decimals},
     thresholds: { warn: ${warn}, critical: ${critical} }
   };
-  const clamp = (v,min,max) => Math.max(min, Math.min(max, v));
-  const next = (prev,[min,max]) => {
-    const drift = (Math.random()-0.5)*(max-min)*0.02;
-    const event = Math.random()<0.04 ? (Math.random()-0.5)*(max-min)*0.25 : 0;
-    return clamp(prev + drift + event, min, max);
+
+  const SENSOR_IDS = {
+    temperature:   ["temperatura","temperature","temp"],
+    humidity:      ["humedad","humidity"],
+    wind:          ["viento","wind"],
+    precipitation: ["precipitacion","precipitation","lluvia","rain"],
+    water:         ["agua","water","waterlevel","nivel_agua","nivel"],
+    seismic:       ["sismo","seismic","seism","vibracion","vibration"]
   };
-  const pct = (v,[min,max]) => ((v-min)/(max-min))*100;
+  const accepts = new Set((SENSOR_IDS[cfg.key] || [cfg.key]).map(s => s.toLowerCase()));
+
+  const clamp = (v,min,max) => Math.max(min, Math.min(max, v));
+  const pct   = (v,[min,max]) => ((v-min)/(max-min))*100;
 
   const ctx = document.getElementById("c");
   const labels = []; const data = [];
@@ -131,27 +137,48 @@ const metricPage = ({
     }
   });
 
-  let cur = (cfg.range[0]+cfg.range[1])/2;
-  function tick(){
-    cur = parseFloat(next(cur, cfg.range).toFixed(cfg.decimals));
+  function pushValue(val) {
+    // clamp to visible range for safety (don’t distort stored data)
+    const v = clamp(Number(val), cfg.range[0], cfg.range[1]);
     const t = new Date().toLocaleTimeString();
-    labels.push(t); data.push(cur);
-    if(labels.length>30){ labels.shift(); data.shift(); }
+
+    labels.push(t); data.push(v);
+    if (labels.length > 30) { labels.shift(); data.shift(); }
     chart.update();
 
-    document.getElementById("latest").textContent = cur.toFixed(cfg.decimals) + " " + cfg.unit;
-    const p = Math.round(pct(cur, cfg.range));
+    // KPI + gauge + badge
+    document.getElementById("latest").textContent = v.toFixed(cfg.decimals) + " " + cfg.unit;
+    const p = Math.round(pct(v, cfg.range));
     const g = document.getElementById("g");
-    g.style.setProperty("--pct", p + "%"); g.style.setProperty("--ring", "#5aa9ff");
+    g.style.setProperty("--pct", p + "%");
+    g.style.setProperty("--ring", "#5aa9ff");
     document.getElementById("pct").textContent = p + "%";
+
     const b = document.getElementById("badge");
-    const st = cur>=cfg.thresholds.critical ? "crit" : cur>=cfg.thresholds.warn ? "warn" : "ok";
+    const st = v >= cfg.thresholds.critical ? "crit" : v >= cfg.thresholds.warn ? "warn" : "ok";
     b.className = "badge " + st;
     b.textContent = st==="ok" ? "Normal" : (st==="warn" ? "Warning" : "Critical");
   }
-  for(let i=0;i<5;i++) tick();
-  setInterval(tick, 3000);
-  setInterval(()=>{ document.getElementById("clock").textContent = new Date().toLocaleString(); }, 1000);
+
+  // --- Live stream via SSE ---
+  let gotAny = false;
+  try {
+    const es = new EventSource("/stream");
+    es.addEventListener("reading", (e) => {
+      const r = JSON.parse(e.data || "{}");
+      console.log("[UI] SSE reading:", r);
+      if (!r || !accepts.has(String(r.sensor || "").toLowerCase())) return;
+      gotAny = true;
+      pushValue(r.value);
+    });
+    es.onerror = () => { /* ignore; browser will auto-retry due to 'retry' header */ };
+  } catch(_) {}
+
+  // Clock
+  setInterval(() => {
+    const el = document.getElementById("clock");
+    if (el) el.textContent = new Date().toLocaleString();
+  }, 1000);
 })();
 </script>
 </body>

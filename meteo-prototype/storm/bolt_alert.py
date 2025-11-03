@@ -9,10 +9,10 @@ class AlertBolt(Bolt):
     def initialize(self, conf, context):
         self.log("✅ AlertBolt initialized with batching...")
 
-        # 🔹 MongoDB Atlas
+        #MongoDB Atlas
         try:
             self.mongo = MongoClient(
-                "mongodb+srv://dmoralesv_db_user:QfBfJPOYxyrvodSt@cdwnbd.vtpnzv0.mongodb.net/?appName=CDWNBD"
+                "MONGO URI HERE"
             )
             self.db = self.mongo["meteo"]
             self.collection = self.db["sensor_data"]
@@ -22,8 +22,8 @@ class AlertBolt(Bolt):
             self.mongo = None
 
         # Telegram config
-        self.telegram_token = "8229041940:AAGl0JgD5gh4YtqsPBt4D97TNklMmfrT3U4"
-        self.chat_id = "1101038300"
+        self.telegram_token = "Telegram Bot Token Here"
+        self.chat_id = "Telegram Chat ID Here"
         self.telegram_url = f"https://api.telegram.org/bot{self.telegram_token}/sendMessage"
 
         # HTTP Session with retry

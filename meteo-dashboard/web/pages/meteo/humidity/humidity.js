@@ -6,5 +6,5 @@ export default () =>
     unit: "%",
     range: [10, 90],
     decimals: 0,
-    thresholds: { warn: 75, critical: 85 },
+    thresholds: { warn: 70, critical: 85 },
   });

@@ -8,26 +8,26 @@ import { emitReading } from "../../meteo-dashboard/src/sse.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
-console.log("🔧 Kafka consumer broker =", process.env.KAFKA_BROKER);
+console.log("Kafka consumer broker =", process.env.KAFKA_BROKER);
 
-// Se conecta a Kafka
+// Connect to Kafka
 const kafkaHost = process.env.KAFKA_BROKER;
 const client = new Kafka.KafkaClient({ kafkaHost });
 
-// Crea una instancia para que Kafka devuelva todos los mensajes nuevos
-// que aparezcan en sensor-data
+// Create an instance so Kafka returns all new messages
+// that appear on the sensor-data topic
 const consumer = new Kafka.Consumer(
   client,
   [{ topic: process.env.KAFKA_TOPIC, partition: 0 }],
   { autoCommit: true }
 );
 
-// Se corre cada vez que se agrega un valor
+// Runs every time a new value is added
 consumer.on("message", (msg) => {
   try {
     const reading = JSON.parse(msg.value);
     reading.sensor = String(reading.sensor || "").toLowerCase();
-    // Se llama a la función que muestra el valor en la interfaz
+    // Call function that displays the value on the dashboard
     emitReading(reading);
     console.log(`📡 Kafka → dashboard: ${reading.sensor}=${reading.value}`);
   } catch (err) {
@@ -36,4 +36,4 @@ consumer.on("message", (msg) => {
 });
 
 consumer.on("error", (err) => console.error("❌ Kafka consumer error:", err));
-console.log("👂 Kafka consumer running…");
+console.log("Kafka consumer running…");

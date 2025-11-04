@@ -7,7 +7,7 @@ from requests.packages.urllib3.util.retry import Retry
 
 class AlertBolt(Bolt):
     def initialize(self, conf, context):
-        self.log("✅ AlertBolt initialized with batching...")
+        self.log("AlertBolt initialized with batching...")
 
         #MongoDB Atlas
         try:
@@ -16,9 +16,9 @@ class AlertBolt(Bolt):
             )
             self.db = self.mongo["meteo"]
             self.collection = self.db["sensor_data"]
-            self.log("✅ Connected to MongoDB Atlas")
+            self.log("Connected to MongoDB Atlas")
         except Exception as e:
-            self.log(f"❌ MongoDB connection failed: {e}")
+            self.log(f"MongoDB connection failed: {e}")
             self.mongo = None
 
         # Telegram config
@@ -31,26 +31,26 @@ class AlertBolt(Bolt):
         retry = Retry(connect=3, backoff_factor=1)
         self.session.mount("https://", HTTPAdapter(max_retries=retry))
 
-        # Buffer de alertas (lista en memoria)
+    # Alert buffer (in-memory list)
         self.alert_buffer = []
         self.buffer_lock = threading.Lock()
 
-        # ⏱️ Hilo para enviar cada 10 s
+    # Thread to send every 10 seconds
         self.sender_thread = threading.Thread(target=self._send_buffer_periodically, daemon=True)
         self.sender_thread.start()
 
     # =======================================================
-    # Envío periódico de alertas agrupadas
+    # Periodic sending of grouped alerts
     # =======================================================
     def _send_buffer_periodically(self):
         while True:
             try:
-                time.sleep(10)  # cada 10 segundos
+                time.sleep(10)  # every 10 seconds
                 with self.buffer_lock:
                     if not self.alert_buffer:
                         continue
 
-                    # Unir todas las alertas pendientes
+                    # Combine all pending alerts
                     combined = "🚨 *METEO ALERT SUMMARY*\n\n" + "\n\n".join(self.alert_buffer)
                     self._send_telegram(combined)
                     self.alert_buffer.clear()
@@ -58,7 +58,7 @@ class AlertBolt(Bolt):
                 self.log(f"❌ Error in buffer sender thread: {e}")
 
     # =======================================================
-    # Envío a Telegram con control de errores y pausas
+    # Send to Telegram with error handling and backoff
     # =======================================================
     def _send_telegram(self, message, parse_mode="Markdown"):
         try:
@@ -74,13 +74,13 @@ class AlertBolt(Bolt):
             else:
                 self.log(f"Telegram API error {resp.status_code}: {resp.text}")
 
-            time.sleep(0.7)  # evita saturar
+            time.sleep(0.7)  # avoid overwhelming the API
 
         except Exception as e:
             self.log(f"❌ Error sending Telegram message: {e}")
 
     # =======================================================
-    # Procesamiento principal
+    # Main processing
     # =======================================================
     def process(self, tup):
         if not self.mongo:
